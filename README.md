@@ -123,3 +123,106 @@ Conectar el `myForm` con el archivo .html:
 
 línea 5:     <form [formGroup]="myForm">
 
+4. Para asociar un fragmento del formulario con el selector del .html:
+
+línea 9:     <select `formControlName="region"` class="form-control">
+
+## Servicio e interfaces
+
+1. abrir Postman.
+
+2. abrir el link del API de la clase ( en este caso corresponde a restcountries.com )
+
+3. buscar "region", copiar el link y pegarlo en postman.
+
+4. click en "SEND".
+
+5. copiar toda la respuesta emitida por postman.
+
+6. abrir quicktype.io > open quicktype > pegar toda la informacion de postman del lado izquierdo y renombrar, en este caso, por Country
+
+7. del lado derecho, verificar que esté activada la opción de "interfaces only" y "verify json.parse results at runtime".
+
+8. copiar el código y regresar a VS.
+
+9. Crear un nuevo archivo en la carpeta `interfaces` llamado [country.interfaces.ts], copiar todo el código copiado de quicktype.
+  Hay que cerciorarse de que se nombre y se utilice adecuadamente lo necesario en la interfaz, en este caso, hay que especificar que se requiere la informacion de los 5 continentes.
+
+10. Creación de servicio, ese servicio dentro de la carpeta "services" se va a llamar `countries` y se creará con angular schematics.
+
+## Selector de regiones
+
+1. Crear dentro del servicio la clase del CountriesService:
+
+  export class CountriesService {
+
+    private _regions: Region[] = [ Region.Africa, Region.Americas, Region.Asia, Region.Europe, Region.Oceania ];
+
+    constructor() { }
+
+    get regions(): Region[] {
+      return [ ...this._regions ];
+    }
+
+  }
+
+2. inyectar el servicio en el `selector-page.component.ts`
+
+  constructor(
+    private fb: FormBuilder, // importarlo de @angular/forms
+    private countriesService: CountriesService,
+  ) {}
+
+inclusión de un getter para mostrar el arreglo de las regiones que quiero mostrar
+
+  get regions(): Region[] {
+    return this.countriesService.regions;
+  }
+
+3. aplicacion en el archivo .html
+
+Una vez creado el servicio, la inyeccion en el .html se hace de la siguiente forma:
+
+  < option *ngFor="let region of regions" [value]="region" > {{ region }} < /option >
+
+# Segundo selector anidado "Countries"
+
+1. Preparación del espacio para countries.
+
+2. copiado del segmento .html:
+
+  < div class="row mb-3">
+    < label class="form-label">País::</>
+    < select formControlName="country" class="form-control">
+      < option value="">-- Seleccione un país --</>
+      < option *ngFor="let region of regions" [value]="region" >{{ region }}</>
+    </>
+  </>
+
+3. Detección del cambio del selector, el selector anidado se disparará cuando el valor del primer selector cambie, es decir, cuando tenga un valor.
+
+4. Ir a selector-page.component.ts, y establecer un `listener` que me diga cuando la region cambia y pueda disparar la region seleccionada para traer la informacion deseada del backend.
+
+  para realizarlo, hay que hacer uso del NgOnInit:
+    * colocar implements OnInit e importarlo de @angular/core.
+    * ngOnInit(): void {
+
+        this.myForm.get('region')!.valueChanges
+         .subscribe( region => {
+           console.log({ region })
+          });
+      }
+
+    * en los servicios necesitamos llamar a todos los paises que esten por esa region. Crearemos una nueva propiedad:
+
+      getCountriesByRegion( region: Region ): SmallCountry[] {
+
+
+        return [];
+      }
+
+    La interfase "SmallCountry" viene de la interfaz hecha previamente en country.interface.ts, donde para no utilizar toda la informacion que respecta a "country", realizamos una interfaz pequeña y nueva que se puede exportar llamada "SmallCountry".
+
+## Obtencion de paises por region.
+
+  * 
